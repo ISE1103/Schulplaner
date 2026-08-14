@@ -109,3 +109,8 @@ Es gibt noch keine Cloud-Synchronisation zwischen mehreren Geräten.
   - Freizeit 🎯
   - Veranstaltung 🎉
   - Sonstiges 📌
+
+## Version 2.9.3
+- „Neuer Termin“-Button im Familienkalender repariert
+- robustes Klick-/Touch-Handling für iPhone/Android
+- Familien-Editor öffnet jetzt über die bestehende Dialog-Infrastruktur

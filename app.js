@@ -210,6 +210,31 @@ const field=(name,label,type="text",value="",opts={})=>{
  if(type==="textarea") return `<div class="field${full}"><label for="${name}">${label}</label><textarea id="${name}" name="${name}"${required}>${esc(value)}</textarea></div>`;
  return `<div class="field${full}"><label for="${name}">${label}</label><input id="${name}" name="${name}" type="${type}" value="${esc(value)}"${required}${opts.min?` min="${opts.min}"`:""}${opts.max?` max="${opts.max}"`:""}></div>`;
 };
+
+function openEditor(title,fieldsHtml,onSave,onDelete=null){
+  const editor=document.querySelector("#editor");
+  const form=document.querySelector("#editorForm");
+  const fields=document.querySelector("#editorFields");
+  const titleEl=document.querySelector("#editorTitle");
+  const deleteBtn=document.querySelector("#deleteBtn");
+  if(!editor||!form||!fields||!titleEl)return;
+
+  titleEl.textContent=title;
+  fields.innerHTML=fieldsHtml;
+  if(deleteBtn){
+    deleteBtn.classList.toggle("hidden",!onDelete);
+    deleteBtn.onclick=onDelete?()=>onDelete():null;
+  }
+
+  form.onsubmit=e=>{
+    e.preventDefault();
+    onSave?.(form);
+    if(editor.open)editor.close();
+  };
+
+  editor.showModal();
+}
+
 function showEditor(title,html,state){
  editorState=state;
  document.querySelector("#editorTitle").textContent=title;
@@ -561,10 +586,6 @@ function openFamilyEvent(id=null){
     chk?.addEventListener("change",()=>wrap?.classList.toggle("hidden",!chk.checked));
   },0);
 }
-document.addEventListener("click",e=>{
-  const btn=e.target.closest("#newFamilyEvent");
-  if(btn){e.preventDefault();openFamilyEvent();}
-});
 document.querySelectorAll(".family-filter").forEach(b=>b.addEventListener("click",()=>{
   familyPersonFilter=b.dataset.person;
   document.querySelectorAll(".family-filter").forEach(x=>x.classList.toggle("active",x===b));
@@ -572,15 +593,13 @@ document.querySelectorAll(".family-filter").forEach(b=>b.addEventListener("click
 }));
 setInterval(()=>{if(document.visibilityState==="visible")checkFamilyReminders()},60000);
 
-function bindFamilyButtons(){
-  const btn=document.querySelector("#newFamilyEvent");
-  if(btn && !btn.dataset.bound){
-    btn.dataset.bound="1";
-    btn.addEventListener("click",e=>{e.preventDefault();openFamilyEvent();});
-  }
-}
-document.addEventListener("DOMContentLoaded",bindFamilyButtons);
-
+document.addEventListener("click",function(e){
+  const btn=e.target.closest("#newFamilyEvent");
+  if(!btn)return;
+  e.preventDefault();
+  e.stopPropagation();
+  openFamilyEvent();
+});
 
 
 function renderAll(){ensureFamilyData();renderDashboard();renderTasks();renderBooks();renderSubjects();renderCalendar();renderFamily();renderFamilyDashboard();checkFamilyReminders();}

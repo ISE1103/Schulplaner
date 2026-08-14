@@ -376,3 +376,12 @@ body{position:relative}
   gap:2px;
   min-width:0;
 }
+
+/* v2.9.3 Terminbutton */
+#newFamilyEvent{
+  position:relative;
+  z-index:3;
+  touch-action:manipulation;
+  cursor:pointer;
+}
+#newFamilyEvent:active{transform:translateY(1px)}
