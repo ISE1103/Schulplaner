@@ -114,3 +114,9 @@ Es gibt noch keine Cloud-Synchronisation zwischen mehreren Geräten.
 - „Neuer Termin“-Button im Familienkalender repariert
 - robustes Klick-/Touch-Handling für iPhone/Android
 - Familien-Editor öffnet jetzt über die bestehende Dialog-Infrastruktur
+
+## Version 2.9.4 – Erinnerungs-Badge
+- fällige Familien-Erinnerungen setzen eine Zahl am App-Symbol, sofern das Gerät die Badging API unterstützt
+- 1 Erinnerung = Badge 1, 2 Erinnerungen = Badge 2 usw.
+- Badge wird beim Öffnen/Rückkehren zur App und während der Nutzung aktualisiert
+- keine Push-Benachrichtigungen

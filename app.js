@@ -534,6 +534,16 @@ function reminderTime(e){
   if(r==="1d")return new Date(s-24*60*60*1000);
   return null;
 }
+
+async function updateReminderBadge(count){
+  try{
+    if(!("setAppBadge" in navigator))return;
+    if(count>0)await navigator.setAppBadge(count);
+    else if("clearAppBadge" in navigator)await navigator.clearAppBadge();
+  }catch(e){
+    console.debug("App-Badge nicht verfügbar:",e);
+  }
+}
 function checkFamilyReminders(){
   const box=document.querySelector("#familyReminderBox");if(!box)return;
   const now=new Date();
@@ -541,6 +551,7 @@ function checkFamilyReminders(){
     const rt=reminderTime(e),st=eventStart(e);
     return rt&&now>=rt&&now<=st;
   }).sort((a,b)=>eventStart(a)-eventStart(b));
+  updateReminderBadge(due.length);
   if(!due.length){box.classList.add("hidden");box.innerHTML="";return;}
   box.classList.remove("hidden");
   box.innerHTML=`<strong>⏰ Erinnerungen</strong>`+due.map(e=>`<div class="reminder-item">${esc(e.title)} · ${eventStart(e).toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})} · ${esc(familyPeopleText(e))}</div>`).join("");
@@ -592,6 +603,10 @@ document.querySelectorAll(".family-filter").forEach(b=>b.addEventListener("click
   renderFamily();
 }));
 setInterval(()=>{if(document.visibilityState==="visible")checkFamilyReminders()},60000);
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible")checkFamilyReminders();
+});
+window.addEventListener("focus",checkFamilyReminders);
 
 document.addEventListener("click",function(e){
   const btn=e.target.closest("#newFamilyEvent");
