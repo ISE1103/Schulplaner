@@ -31,10 +31,10 @@ function toast(msg){const el=document.querySelector("#toast");el.textContent=msg
 
 function setView(id){
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===id));
-  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===id));
+  document.querySelectorAll(".tab,.bottom-tab").forEach(b=>b.classList.toggle("active",b.dataset.view===id));
   window.scrollTo({top:0,behavior:"smooth"});
 }
-document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>setView(b.dataset.view)));
+document.querySelectorAll(".tab,.bottom-tab").forEach(b=>b.addEventListener("click",()=>setView(b.dataset.view)));
 document.addEventListener("click",e=>{
   const a=e.target.closest("[data-action]"); if(!a)return;
   ({ "new-task":()=>openTask(), "new-book":()=>openBook(), "new-subject":()=>openSubject(), "new-lesson":()=>openLesson() }[a.dataset.action]||(()=>{}))();
@@ -225,6 +225,27 @@ document.querySelector("#deleteBtn").addEventListener("click",()=>{
  data[map[type]]=data[map[type]].filter(x=>x.id!==editorState.id);
  document.querySelector("#editor").close();saveData();toast("Gelöscht");
 });
+
+function exportBackup(){
+  const backup={app:"Mein Schulplaner",version:2,exportedAt:new Date().toISOString(),data};
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=`schulplaner-backup-${localYMD(new Date())}.json`;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast("Backup erstellt");
+}
+async function importBackup(file){
+  if(!file)return;
+  try{
+    const parsed=JSON.parse(await file.text()),incoming=parsed.data||parsed;
+    if(!incoming||!["subjects","books","tasks","lessons"].every(k=>Array.isArray(incoming[k])))throw new Error("format");
+    if(!confirm("Das Backup ersetzt die aktuell auf diesem Gerät gespeicherten Schulplaner-Daten. Fortfahren?"))return;
+    data={subjects:incoming.subjects,books:incoming.books,tasks:incoming.tasks,lessons:incoming.lessons};
+    saveData();toast("Backup wiederhergestellt");
+  }catch(e){alert("Die Datei konnte nicht als Schulplaner-Backup gelesen werden.");}
+  finally{document.querySelector("#importBackup").value="";}
+}
+document.querySelector("#exportBackup").addEventListener("click",exportBackup);
+document.querySelector("#importBackup").addEventListener("change",e=>importBackup(e.target.files[0]));
 
 function renderAll(){renderDashboard();renderTasks();renderBooks();renderSubjects();renderCalendar();}
 renderAll();

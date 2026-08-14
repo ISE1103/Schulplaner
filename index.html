@@ -43,6 +43,14 @@
 
       <h3>Nächste Aufgaben</h3>
       <div id="nextTasks" class="card-list"></div>
+      <h3>💾 Datensicherung</h3>
+      <div class="backup-panel">
+        <div><strong>Deine Daten sichern</strong><p>Exportiere Aufgaben, Stundenplan, Bücher und Fächer als Datei oder stelle eine Sicherung wieder her.</p></div>
+        <div class="backup-actions">
+          <button id="exportBackup" class="ghost" type="button">⬇️ Backup exportieren</button>
+          <label class="ghost file-button">⬆️ Backup importieren<input id="importBackup" type="file" accept=".json,application/json"></label>
+        </div>
+      </div>
     </section>
 
     <section id="calendar" class="view">
@@ -100,6 +108,13 @@
     </form>
   </dialog>
 
+  <nav class="bottom-nav" aria-label="Mobile Navigation">
+    <button class="bottom-tab active" data-view="dashboard"><span>🏠</span><small>Übersicht</small></button>
+    <button class="bottom-tab" data-view="calendar"><span>🕐</span><small>Plan</small></button>
+    <button class="bottom-tab" data-view="tasks"><span>📝</span><small>Aufgaben</small></button>
+    <button class="bottom-tab" data-view="books"><span>📚</span><small>Bücher</small></button>
+    <button class="bottom-tab" data-view="subjects"><span>👨‍🏫</span><small>Fächer</small></button>
+  </nav>
   <div id="toast" class="toast" role="status"></div>
   <script src="app.js"></script>
 </body>

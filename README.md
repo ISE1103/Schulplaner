@@ -28,3 +28,9 @@ Es gibt noch keine Cloud-Synchronisation zwischen mehreren Geräten.
 - manifest.webmanifest – PWA-Metadaten
 - sw.js – Offline-Cache
 - icons/ – App-Symbole
+
+## Version 2
+- iPhone-Navigation unten
+- Backup als JSON exportieren
+- Backup wiederherstellen
+- Offline-Cache aktualisiert
