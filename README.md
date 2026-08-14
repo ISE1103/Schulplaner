@@ -43,3 +43,20 @@ Es gibt noch keine Cloud-Synchronisation zwischen mehreren Geräten.
 - Freie Stunde antippen = direkt neue Stunde für diesen Platz anlegen
 - Bestehende Stunde antippen = bearbeiten
 - Desktop/Tablet-Mehrspaltenansicht bleibt erhalten
+
+
+## Version 2.3 – Familienkonto
+- gemeinsamer E-Mail/Passwort-Login
+- Supabase Cloud-Speicherung
+- automatische Echtzeit-Synchronisation zwischen mehreren Geräten
+- Row Level Security: nur das angemeldete Familienkonto darf seine Daten lesen/ändern
+- lokale Offline-Kopie bleibt erhalten
+- siehe `FAMILIENKONTO_SETUP.md` und `SUPABASE_SETUP.sql`
+
+
+## Version 2.4 – Passwort-Login
+- Benutzeroberfläche fragt nur noch nach dem gemeinsamen Familien-Passwort
+- technische Supabase-E-Mail bleibt unsichtbar in `supabase-config.js`
+- kein Passwort wird im Quellcode gespeichert
+- automatische Cloud-Synchronisation bleibt erhalten
+- siehe `PASSWORT_LOGIN_SETUP.md`

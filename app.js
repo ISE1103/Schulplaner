@@ -10,7 +10,63 @@ function loadData(){
   }catch(e){}
   return {subjects:[],books:[],tasks:[],lessons:[]};
 }
-function saveData(){localStorage.setItem(KEY,JSON.stringify(data));renderAll();}
+let cloudClient=null, cloudUser=null, realtimeChannel=null, cloudWriteTimer=null, applyingRemote=false;
+
+function setSyncStatus(text,state=""){
+  const el=document.querySelector("#syncStatus");
+  if(!el)return;
+  el.textContent=text;
+  el.className="sync-status"+(state?` ${state}`:"");
+}
+function saveData(){
+  localStorage.setItem(KEY,JSON.stringify(data));
+  renderAll();
+  if(cloudUser && !applyingRemote) scheduleCloudSave();
+}
+function scheduleCloudSave(){
+  clearTimeout(cloudWriteTimer);
+  setSyncStatus("☁️ Synchronisiere…","busy");
+  cloudWriteTimer=setTimeout(pushCloudState,350);
+}
+async function pushCloudState(){
+  if(!cloudClient||!cloudUser)return;
+  const payload={user_id:cloudUser.id,data,updated_at:new Date().toISOString()};
+  const {error}=await cloudClient.from("planner_state").upsert(payload,{onConflict:"user_id"});
+  if(error){console.error(error);setSyncStatus("⚠️ Sync-Fehler","error");return;}
+  setSyncStatus("☁️ Synchronisiert","ok");
+}
+async function loadCloudState(){
+  if(!cloudClient||!cloudUser)return;
+  setSyncStatus("☁️ Lade Daten…","busy");
+  const {data:row,error}=await cloudClient.from("planner_state").select("data,updated_at").eq("user_id",cloudUser.id).maybeSingle();
+  if(error){console.error(error);setSyncStatus("⚠️ Cloud-Fehler","error");return;}
+  if(row?.data){
+    applyingRemote=true;
+    data={subjects:row.data.subjects||[],books:row.data.books||[],tasks:row.data.tasks||[],lessons:row.data.lessons||[]};
+    localStorage.setItem(KEY,JSON.stringify(data));renderAll();
+    applyingRemote=false;
+  }else{
+    await pushCloudState();
+  }
+  setSyncStatus("☁️ Synchronisiert","ok");
+}
+function startRealtime(){
+  if(!cloudClient||!cloudUser)return;
+  if(realtimeChannel)cloudClient.removeChannel(realtimeChannel);
+  realtimeChannel=cloudClient.channel(`planner-${cloudUser.id}`)
+    .on("postgres_changes",{event:"*",schema:"public",table:"planner_state",filter:`user_id=eq.${cloudUser.id}`},payload=>{
+      const remote=payload.new?.data;
+      if(!remote)return;
+      applyingRemote=true;
+      data={subjects:remote.subjects||[],books:remote.books||[],tasks:remote.tasks||[],lessons:remote.lessons||[]};
+      localStorage.setItem(KEY,JSON.stringify(data));renderAll();
+      applyingRemote=false;
+      setSyncStatus("☁️ Aktualisiert","ok");
+    }).subscribe(status=>{
+      if(status==="SUBSCRIBED")setSyncStatus("☁️ Live verbunden","ok");
+    });
+}
+
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function subjectInfo(name){return data.subjects.find(s=>s.name===name)||{}}
@@ -288,7 +344,70 @@ editorDialog?.addEventListener("cancel",e=>{
   closeEditor();
 });
 
+
+function supabaseConfigured(){
+  return window.SUPABASE_URL &&
+    !window.SUPABASE_URL.includes("HIER_") &&
+    window.SUPABASE_PUBLISHABLE_KEY &&
+    !window.SUPABASE_PUBLISHABLE_KEY.includes("HIER_") &&
+    window.FAMILY_LOGIN_EMAIL &&
+    !window.FAMILY_LOGIN_EMAIL.includes("HIER_");
+}
+function showAuthMessage(msg,ok=false){
+  const el=document.querySelector("#authMessage");if(!el)return;
+  el.textContent=msg;el.style.color=ok?"#15803D":"#B91C1C";
+}
+function showLoggedIn(user){
+  document.querySelector("#authScreen")?.classList.add("hidden");
+  document.querySelector("#accountBar")?.classList.remove("hidden");
+}
+function showLoggedOut(){
+  document.querySelector("#authScreen")?.classList.remove("hidden");
+  document.querySelector("#accountBar")?.classList.add("hidden");
+  setSyncStatus("☁️ Nicht angemeldet");
+}
+async function initCloud(){
+  if(!supabaseConfigured()){
+    showLoggedOut();
+    showAuthMessage("Supabase ist noch nicht vollständig eingerichtet. Bitte Konfiguration prüfen.");
+    setSyncStatus("⚙️ Einrichtung nötig","busy");
+    return;
+  }
+  cloudClient=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY);
+  const {data:{session}}=await cloudClient.auth.getSession();
+  if(session?.user){
+    cloudUser=session.user;showLoggedIn(cloudUser);await loadCloudState();startRealtime();
+  }else showLoggedOut();
+
+  cloudClient.auth.onAuthStateChange(async(event,session)=>{
+    cloudUser=session?.user||null;
+    if(cloudUser){
+      showLoggedIn(cloudUser);
+      await loadCloudState();startRealtime();
+    }else{
+      if(realtimeChannel){cloudClient.removeChannel(realtimeChannel);realtimeChannel=null;}
+      showLoggedOut();
+    }
+  });
+}
+document.querySelector("#loginForm")?.addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!cloudClient)return showAuthMessage("Supabase ist noch nicht eingerichtet.");
+  showAuthMessage("Anmeldung läuft…",true);
+  const password=document.querySelector("#loginPassword").value;
+  const {error}=await cloudClient.auth.signInWithPassword({
+    email:window.FAMILY_LOGIN_EMAIL,
+    password
+  });
+  if(error)showAuthMessage("Passwort falsch oder Anmeldung nicht möglich.");
+});
+
+document.querySelector("#logoutBtn")?.addEventListener("click",async()=>{
+  if(cloudClient)await cloudClient.auth.signOut();
+});
+
 function renderAll(){renderDashboard();renderTasks();renderBooks();renderSubjects();renderCalendar();}
 renderAll();
+initCloud();
 
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(console.warn));

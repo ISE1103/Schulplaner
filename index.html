@@ -14,12 +14,37 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+  <section id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <div class="auth-logo">📚</div>
+      <h1>Familien-Schulplaner</h1>
+      <p class="auth-subtitle">Gemeinsamer Zugang für eure Geräte.</p>
+
+      <form id="loginForm" class="auth-form">
+        <label>Familien-Passwort
+          <input id="loginPassword" type="password" autocomplete="current-password" required minlength="8" placeholder="••••••••">
+        </label>
+        <button class="primary auth-primary" type="submit">🔐 Anmelden</button>
+      </form>
+
+      <p id="authMessage" class="auth-message"></p>
+      <p class="auth-help">Auf allen Smartphones und Tablets verwendet ihr dasselbe Passwort.</p>
+    </div>
+  </section>
+
   <header class="app-header">
     <div>
       <h1>📚 Mein Schulplaner</h1>
       <p>Schule • Stundenplan • Aufgaben • Bücher • Lehrer</p>
     </div>
-    <div id="clock" class="clock"></div>
+    <div class="header-right">
+      <div id="syncStatus" class="sync-status">☁️ Offline</div>
+      <div id="accountBar" class="account-bar hidden">
+        <button id="logoutBtn" type="button" class="header-button">Abmelden</button>
+      </div>
+      <div id="clock" class="clock"></div>
+    </div>
   </header>
 
   <nav class="tabs" aria-label="Bereiche">
@@ -116,6 +141,8 @@
     <button class="bottom-tab" data-view="subjects"><span>👨‍🏫</span><small>Fächer</small></button>
   </nav>
   <div id="toast" class="toast" role="status"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
