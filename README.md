@@ -68,3 +68,10 @@ Es gibt noch keine Cloud-Synchronisation zwischen mehreren Geräten.
 - Dialoge passen sich an die aktuelle Bildschirmhöhe an
 - Safe-Area-Unterstützung für iPhone
 - Tablet-Querformat behält Mehrspaltenansicht
+
+## Version 2.6 – iOS Auto-Zoom Fix
+- Eingabefelder auf iPhone mindestens 16px Schriftgröße
+- verhindert Safari/PWA-Auto-Zoom beim Passwortfeld
+- Login-Feld verliert Fokus vor dem Wechsel zur App
+- App und Auth-Bildschirm strikt auf Viewport-Breite begrenzt
+- zusätzliche Breitenkorrekturen für Hoch- und Querformat

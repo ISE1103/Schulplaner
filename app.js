@@ -358,8 +358,15 @@ function showAuthMessage(msg,ok=false){
   el.textContent=msg;el.style.color=ok?"#15803D":"#B91C1C";
 }
 function showLoggedIn(user){
+  document.activeElement?.blur();
   document.querySelector("#authScreen")?.classList.add("hidden");
   document.querySelector("#accountBar")?.classList.remove("hidden");
+  requestAnimationFrame(()=>{
+    window.scrollTo(0,0);
+    document.documentElement.scrollLeft=0;
+    document.body.scrollLeft=0;
+    handleViewportChange?.();
+  });
 }
 function showLoggedOut(){
   document.querySelector("#authScreen")?.classList.remove("hidden");
@@ -393,6 +400,7 @@ async function initCloud(){
 document.querySelector("#loginForm")?.addEventListener("submit",async e=>{
   e.preventDefault();
   if(!cloudClient)return showAuthMessage("Supabase ist noch nicht eingerichtet.");
+  document.activeElement?.blur();
   showAuthMessage("Anmeldung läuft…",true);
   const password=document.querySelector("#loginPassword").value;
   const {error}=await cloudClient.auth.signInWithPassword({
