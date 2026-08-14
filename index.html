@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#5B5FEF">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Schulplaner">
+  <title>Mein Schulplaner</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>📚 Mein Schulplaner</h1>
+      <p>Schule • Stundenplan • Aufgaben • Bücher • Lehrer</p>
+    </div>
+    <div id="clock" class="clock"></div>
+  </header>
+
+  <nav class="tabs" aria-label="Bereiche">
+    <button class="tab active" data-view="dashboard">🏠 <span>Übersicht</span></button>
+    <button class="tab" data-view="calendar">🕐 <span>Stundenplan</span></button>
+    <button class="tab" data-view="tasks">📝 <span>Aufgaben</span></button>
+    <button class="tab" data-view="books">📚 <span>Bücher</span></button>
+    <button class="tab" data-view="subjects">👨‍🏫 <span>Fächer</span></button>
+  </nav>
+
+  <main>
+    <section id="dashboard" class="view active">
+      <div class="page-title">
+        <div><h2>Hallo! 👋</h2><p>Hier siehst du, was als Nächstes ansteht.</p></div>
+        <button class="primary" data-action="new-task">＋ Aufgabe</button>
+      </div>
+      <div id="stats" class="stats"></div>
+
+      <h3>🔔 Nächste 24 Stunden</h3>
+      <div id="reminders" class="card-list"></div>
+
+      <h3>Nächste Aufgaben</h3>
+      <div id="nextTasks" class="card-list"></div>
+    </section>
+
+    <section id="calendar" class="view">
+      <div class="page-title">
+        <div><h2>Stundenplan</h2><p>Einzel- und Doppelstunden, optimiert für Touch.</p></div>
+        <button class="primary" data-action="new-lesson">＋ Neue Stunde</button>
+      </div>
+      <div class="weekday-switch" id="weekdaySwitch"></div>
+      <div id="calendarGrid" class="calendar-grid"></div>
+    </section>
+
+    <section id="tasks" class="view">
+      <div class="page-title">
+        <div><h2>Aufgaben</h2><p>Tippe auf eine Aufgabe zum Bearbeiten.</p></div>
+        <button class="primary" data-action="new-task">＋ Neue Aufgabe</button>
+      </div>
+      <div class="toolbar">
+        <select id="taskFilter" aria-label="Aufgabenfilter">
+          <option>Offen</option><option>Alle</option><option>Erledigt</option>
+        </select>
+      </div>
+      <div id="taskList" class="card-list"></div>
+    </section>
+
+    <section id="books" class="view">
+      <div class="page-title">
+        <div><h2>Bücher</h2><p>Schulbücher nach Fach verwalten.</p></div>
+        <button class="primary" data-action="new-book">＋ Neues Buch</button>
+      </div>
+      <div id="bookList" class="card-list"></div>
+    </section>
+
+    <section id="subjects" class="view">
+      <div class="page-title">
+        <div><h2>Fächer & Lehrer</h2><p>Lehrer, E-Mail und Raum hinterlegen.</p></div>
+        <button class="primary" data-action="new-subject">＋ Neues Fach</button>
+      </div>
+      <div id="subjectList" class="card-list"></div>
+    </section>
+  </main>
+
+  <dialog id="editor">
+    <form method="dialog" id="editorForm">
+      <div class="modal-head">
+        <h2 id="editorTitle">Eintrag</h2>
+        <button class="icon-button" value="cancel" aria-label="Schließen">✕</button>
+      </div>
+      <div id="editorFields" class="form-grid"></div>
+      <div class="modal-actions">
+        <button type="button" id="deleteBtn" class="danger ghost hidden">🗑 Löschen</button>
+        <span class="spacer"></span>
+        <button value="cancel" class="ghost">Abbrechen</button>
+        <button type="submit" class="primary">💾 Speichern</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
