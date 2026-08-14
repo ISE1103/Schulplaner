@@ -34,3 +34,12 @@ Es gibt noch keine Cloud-Synchronisation zwischen mehreren Geräten.
 - Backup als JSON exportieren
 - Backup wiederherstellen
 - Offline-Cache aktualisiert
+
+## Version 2.2
+- Stundenplan für iPhone, Android und Tablets optimiert
+- Auf Smartphones ein Wochentag pro Ansicht
+- Größere touchfreundliche Stundenkarten
+- Fach, Lehrer, Raum und Notiz übersichtlicher
+- Freie Stunde antippen = direkt neue Stunde für diesen Platz anlegen
+- Bestehende Stunde antippen = bearbeiten
+- Desktop/Tablet-Mehrspaltenansicht bleibt erhalten

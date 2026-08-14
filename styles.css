@@ -60,3 +60,34 @@ dialog form{padding:0 20px 20px}.modal-head{position:sticky;top:0;background:whi
 .backup-panel{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:18px;box-shadow:var(--shadow)}
 .backup-panel p{color:var(--muted);margin:6px 0 0;line-height:1.45}.backup-actions{display:flex;gap:8px;flex-wrap:wrap}.file-button{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.file-button input{display:none}.bottom-nav{display:none}
 @media(max-width:700px){body{padding-bottom:calc(78px + env(safe-area-inset-bottom))}.tabs{display:none}.bottom-nav{position:fixed;display:grid;grid-template-columns:repeat(5,1fr);left:0;right:0;bottom:0;z-index:50;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-top:1px solid var(--border);padding:7px 5px calc(7px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(32,36,58,.08)}.bottom-tab{border:0;background:transparent;color:var(--muted);border-radius:12px;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:700}.bottom-tab span{font-size:20px;line-height:1}.bottom-tab small{font-size:10px}.bottom-tab.active{color:var(--primary);background:#F1F2FF}.backup-panel{align-items:stretch;flex-direction:column}.backup-actions{display:grid}.backup-actions>*{width:100%}}
+
+/* v2.2 – touchfreundlicher Stundenplan */
+.calendar-grid{align-items:start}
+.day-column{scroll-margin-top:90px}
+.lesson-slot{position:relative;transition:border-color .15s,background .15s;cursor:pointer}
+.lesson-slot.empty-slot:active{background:#F1F2FF;border-color:#C7CBFF}
+.lesson-slot.empty-slot::after{content:"＋";position:absolute;right:10px;top:8px;color:#B8BDD0;font-size:18px;font-weight:800}
+.lesson{min-height:62px;display:flex;flex-direction:column;justify-content:center;gap:3px;box-shadow:0 2px 8px rgba(32,36,58,.04)}
+.lesson .lesson-title{font-size:15px;font-weight:800;color:var(--primary-dark)}
+.lesson .lesson-meta{font-size:12px;color:var(--muted);line-height:1.35}
+.lesson .lesson-note{font-size:12px;margin-top:3px;color:var(--text)}
+@media(max-width:1000px){
+ .weekday-switch{position:sticky;top:0;z-index:15;background:var(--bg);padding:8px 0 10px}
+ .weekday-switch button{min-width:92px;min-height:46px;font-size:14px}
+ .calendar-grid{overflow:visible}
+ .day-column{min-width:0;width:100%}
+ .day-column>h3{position:static;font-size:22px;padding:8px 2px 12px}
+ .lesson-slot{min-height:92px;padding:11px 12px;margin-bottom:10px}
+ .lesson-number{font-size:13px}
+ .lesson{padding:12px;min-height:68px}
+ .lesson .lesson-title{font-size:17px}
+ .lesson .lesson-meta{font-size:13px}
+}
+@media(max-width:700px){
+ #calendar .page-title{margin-bottom:8px}
+ #calendar .page-title p{font-size:13px}
+ #calendar .page-title .primary{display:none}
+ .weekday-switch{margin:0 -12px;padding:8px 12px 10px;top:0}
+ .weekday-switch button{min-width:84px}
+ .lesson-slot{border-radius:16px}
+}

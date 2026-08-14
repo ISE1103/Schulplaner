@@ -118,14 +118,32 @@ function renderSubjects(){
 
 function renderCalendar(){
  const switcher=document.querySelector("#weekdaySwitch");
- switcher.innerHTML=DAYS.map((d,i)=>`<button class="${selectedDay===i+1?"active":""}" data-day="${i+1}">${d.slice(0,2)}</button>`).join("");
- switcher.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{selectedDay=+b.dataset.day;renderCalendar()}));
+ switcher.innerHTML=DAYS.map((d,i)=>`<button class="${selectedDay===i+1?"active":""}" data-day="${i+1}">${d}</button>`).join("");
+ switcher.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+   selectedDay=+b.dataset.day;renderCalendar();
+ }));
  const root=document.querySelector("#calendarGrid");
- root.innerHTML=DAYS.map((day,di)=>`<section class="day-column ${selectedDay===di+1?"active":""}"><h3>${day}</h3>${Array.from({length:12},(_,i)=>{
-   const nr=i+1, ls=data.lessons.filter(l=>l.weekday===di+1&&l.lessonNumber===nr);
-   return `<div class="lesson-slot"><div class="lesson-number">${nr}. Stunde</div>${ls.map(l=>`<div class="lesson" data-lesson="${l.id}"><strong>📚 ${esc(l.subject)}</strong><br><small>${l.duration===2?"Doppelstunde":"Einzelstunde"}${l.teacher?" · "+esc(l.teacher):""}${l.room?" · Raum "+esc(l.room):""}</small>${l.note?`<p>${esc(l.note)}</p>`:""}</div>`).join("")}</div>`
- }).join("")}</section>`).join("");
- root.querySelectorAll("[data-lesson]").forEach(el=>el.addEventListener("click",()=>openLesson(el.dataset.lesson)));
+ root.innerHTML=DAYS.map((day,di)=>`<section class="day-column ${selectedDay===di+1?"active":""}"><h3>${day}</h3>${
+   Array.from({length:12},(_,i)=>{
+     const nr=i+1, ls=data.lessons.filter(l=>l.weekday===di+1&&l.lessonNumber===nr);
+     const content=ls.map(l=>`<div class="lesson" data-lesson="${l.id}">
+       <div class="lesson-title">📚 ${esc(l.subject)}</div>
+       <div class="lesson-meta">${l.duration===2?"Doppelstunde":"Einzelstunde"}${l.teacher?" · 👨‍🏫 "+esc(l.teacher):""}${l.room?" · 🚪 "+esc(l.room):""}</div>
+       ${l.note?`<div class="lesson-note">${esc(l.note)}</div>`:""}
+     </div>`).join("");
+     return `<div class="lesson-slot ${ls.length?"":"empty-slot"}" data-slot-day="${di+1}" data-slot-number="${nr}">
+       <div class="lesson-number">${nr}. Stunde</div>${content}
+     </div>`;
+   }).join("")
+ }</section>`).join("");
+
+ root.querySelectorAll("[data-lesson]").forEach(el=>el.addEventListener("click",e=>{
+   e.stopPropagation();openLesson(el.dataset.lesson);
+ }));
+ root.querySelectorAll(".empty-slot").forEach(el=>el.addEventListener("click",()=>{
+   selectedDay=+el.dataset.slotDay;
+   openLesson(null,+el.dataset.slotDay,+el.dataset.slotNumber);
+ }));
 }
 
 const field=(name,label,type="text",value="",opts={})=>{
@@ -175,8 +193,8 @@ function openSubject(id=null){
   field("room","Raum","text",s.room)+
   field("email","E-Mail","email",s.email,{full:true}),{type:"subject",id});
 }
-function openLesson(id=null){
- const l=data.lessons.find(x=>x.id===id)||{weekday:selectedDay,lessonNumber:1,duration:1,subject:"Mathe",teacher:"",room:"",note:""};
+function openLesson(id=null,day=null,lessonNumber=null){
+ const l=data.lessons.find(x=>x.id===id)||{weekday:day||selectedDay,lessonNumber:lessonNumber||1,duration:1,subject:"Mathe",teacher:"",room:"",note:""};
  showEditor(id?"Stunde bearbeiten":"Neue Stunde",
   field("weekday","Wochentag","select",l.weekday,{options:DAYS.map((d,i)=>({value:i+1,label:d}))})+
   field("lessonNumber","Stunde","select",l.lessonNumber,{options:Array.from({length:12},(_,i)=>String(i+1))})+
