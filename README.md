@@ -86,3 +86,14 @@ Es gibt noch keine Cloud-Synchronisation zwischen mehreren Geräten.
 - Im Smartphone-Hochformat werden Montag bis Freitag gleichzeitig angezeigt
 - Kein seitliches Wischen mehr nötig, um Freitag zu erreichen
 - Wochentagsbuttons passen sich auch an schmale iPhones an
+
+## Version 2.9 – Familienkalender
+- Neuer Reiter Familie
+- Termine für Lara, Bianca, Ivan und Sonstige
+- Mehrere Personen pro Termin möglich
+- Sonstige mit frei eintragbarem Namen
+- Kategorien, Datum, Start-/Endzeit, Ort und Notiz
+- In-App-Erinnerungen: 30 Minuten, 1 Stunde oder 1 Tag vorher
+- Filter nach Person
+- kommende Familientermine auf der Übersicht
+- Familienkalender wird über die bestehende Supabase-Cloud synchronisiert

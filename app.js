@@ -2,6 +2,8 @@ const DEFAULT_SUBJECTS=["Mathe","Deutsch","Englisch","Biologie","Chemie","Physik
 const DAYS=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag"];
 const KEY="schulplaner.pwa.data.v1";
 let data=loadData(), selectedDay=1, editorState=null;
+function ensureFamilyData(){if(!Array.isArray(data.familyEvents))data.familyEvents=[];}
+ensureFamilyData();
 
 function loadData(){
   try{
@@ -42,7 +44,7 @@ async function loadCloudState(){
   if(error){console.error(error);setSyncStatus("⚠️ Cloud-Fehler","error");return;}
   if(row?.data){
     applyingRemote=true;
-    data={subjects:row.data.subjects||[],books:row.data.books||[],tasks:row.data.tasks||[],lessons:row.data.lessons||[]};
+    data={subjects:row.data.subjects||[],books:row.data.books||[],tasks:row.data.tasks||[],lessons:row.data.lessons||[],familyEvents:row.data.familyEvents||[]};
     localStorage.setItem(KEY,JSON.stringify(data));renderAll();
     applyingRemote=false;
   }else{
@@ -58,7 +60,7 @@ function startRealtime(){
       const remote=payload.new?.data;
       if(!remote)return;
       applyingRemote=true;
-      data={subjects:remote.subjects||[],books:remote.books||[],tasks:remote.tasks||[],lessons:remote.lessons||[]};
+      data={subjects:remote.subjects||[],books:remote.books||[],tasks:remote.tasks||[],lessons:remote.lessons||[],familyEvents:remote.familyEvents||[]};
       localStorage.setItem(KEY,JSON.stringify(data));renderAll();
       applyingRemote=false;
       setSyncStatus("☁️ Aktualisiert","ok");
@@ -313,7 +315,7 @@ async function importBackup(file){
     const parsed=JSON.parse(await file.text()),incoming=parsed.data||parsed;
     if(!incoming||!["subjects","books","tasks","lessons"].every(k=>Array.isArray(incoming[k])))throw new Error("format");
     if(!confirm("Das Backup ersetzt die aktuell auf diesem Gerät gespeicherten Schulplaner-Daten. Fortfahren?"))return;
-    data={subjects:incoming.subjects,books:incoming.books,tasks:incoming.tasks,lessons:incoming.lessons};
+    data={subjects:incoming.subjects,books:incoming.books,tasks:incoming.tasks,lessons:incoming.lessons,familyEvents:incoming.familyEvents||[]};
     saveData();toast("Backup wiederhergestellt");
   }catch(e){alert("Die Datei konnte nicht als Schulplaner-Backup gelesen werden.");}
   finally{document.querySelector("#importBackup").value="";}
@@ -439,7 +441,123 @@ window.addEventListener("orientationchange",handleViewportChange);
 window.addEventListener("resize",handleViewportChange);
 window.visualViewport?.addEventListener("resize",handleViewportChange);
 
-function renderAll(){renderDashboard();renderTasks();renderBooks();renderSubjects();renderCalendar();}
+
+let familyPersonFilter="all";
+const FAMILY_CATEGORIES=["Familie","Schule","Arzt","Privat","Arbeit","Freizeit","Veranstaltung","Sonstiges"];
+const FAMILY_REMINDERS=[
+ ["none","Keine"],["30m","30 Minuten vorher"],["1h","1 Stunde vorher"],["1d","1 Tag vorher"]
+];
+function eventStart(e){
+  const t=e.startTime||"00:00";
+  return new Date(`${e.date}T${t}:00`);
+}
+function familyPeopleText(e){
+  const a=[...(e.people||[])];
+  if(e.otherName)a.push(e.otherName);
+  return a.join(", ")||"–";
+}
+function familyEventCard(e,past=false){
+  const start=eventStart(e), date=start.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"});
+  const time=e.startTime?`${e.startTime}${e.endTime?"–"+e.endTime:""} Uhr`:"ganztägig";
+  return `<article class="family-event ${past?"past":""}" data-family-id="${e.id}">
+    <div class="family-event-top"><div class="family-event-title">${esc(e.title)}</div><div class="family-event-date">${date} · ${time}</div></div>
+    <div class="family-event-meta">
+      <span class="family-chip">👤 ${esc(familyPeopleText(e))}</span>
+      <span class="family-chip">${esc(e.category||"Sonstiges")}</span>
+      ${e.location?`<span>📍 ${esc(e.location)}</span>`:""}
+      ${e.reminder&&e.reminder!=="none"?`<span>⏰ ${esc(FAMILY_REMINDERS.find(x=>x[0]===e.reminder)?.[1]||"Erinnerung")}</span>`:""}
+    </div>
+    ${e.note?`<div class="family-event-note">${esc(e.note)}</div>`:""}
+  </article>`;
+}
+function renderFamily(){
+  ensureFamilyData();
+  const now=new Date();
+  const matches=e=>familyPersonFilter==="all"||(e.people||[]).includes(familyPersonFilter)||(familyPersonFilter==="Sonstige"&&!!e.otherName);
+  const all=[...data.familyEvents].filter(matches).sort((a,b)=>eventStart(a)-eventStart(b));
+  const upcoming=all.filter(e=>eventStart(e)>=now);
+  const past=all.filter(e=>eventStart(e)<now).reverse().slice(0,30);
+  const u=document.querySelector("#familyUpcoming"),p=document.querySelector("#familyPast");
+  if(u)u.innerHTML=upcoming.length?upcoming.map(e=>familyEventCard(e)).join(""):'<div class="empty">Keine kommenden Familientermine.</div>';
+  if(p)p.innerHTML=past.length?past.map(e=>familyEventCard(e,true)).join(""):'<div class="empty">Keine vergangenen Termine.</div>';
+  document.querySelectorAll("[data-family-id]").forEach(el=>el.addEventListener("click",()=>openFamilyEvent(el.dataset.familyId)));
+}
+function renderFamilyDashboard(){
+  const el=document.querySelector("#nextFamilyEvents");if(!el)return;
+  const now=new Date();
+  const upcoming=[...data.familyEvents].filter(e=>eventStart(e)>=now).sort((a,b)=>eventStart(a)-eventStart(b)).slice(0,5);
+  el.innerHTML=upcoming.length?upcoming.map(e=>familyEventCard(e)).join(""):'<div class="empty">Keine kommenden Familientermine.</div>';
+  el.querySelectorAll("[data-family-id]").forEach(x=>x.addEventListener("click",()=>{setView("family");openFamilyEvent(x.dataset.familyId)}));
+}
+function reminderTime(e){
+  const s=eventStart(e),r=e.reminder;
+  if(r==="30m")return new Date(s-30*60*1000);
+  if(r==="1h")return new Date(s-60*60*1000);
+  if(r==="1d")return new Date(s-24*60*60*1000);
+  return null;
+}
+function checkFamilyReminders(){
+  const box=document.querySelector("#familyReminderBox");if(!box)return;
+  const now=new Date();
+  const due=data.familyEvents.filter(e=>{
+    const rt=reminderTime(e),st=eventStart(e);
+    return rt&&now>=rt&&now<=st;
+  }).sort((a,b)=>eventStart(a)-eventStart(b));
+  if(!due.length){box.classList.add("hidden");box.innerHTML="";return;}
+  box.classList.remove("hidden");
+  box.innerHTML=`<strong>⏰ Erinnerungen</strong>`+due.map(e=>`<div class="reminder-item">${esc(e.title)} · ${eventStart(e).toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})} · ${esc(familyPeopleText(e))}</div>`).join("");
+}
+function openFamilyEvent(id=null){
+  const e=data.familyEvents.find(x=>x.id===id)||{
+    id:null,title:"",date:localYMD(new Date()),startTime:"",endTime:"",category:"Familie",
+    people:[],otherName:"",location:"",note:"",reminder:"none"
+  };
+  openEditor(id?"Familientermin bearbeiten":"Neuer Familientermin",`
+    <label>Titel<input name="title" required value="${esc(e.title)}" placeholder="z. B. Elternabend"></label>
+    <div class="form-grid">
+      <label>Datum<input name="date" type="date" required value="${esc(e.date)}"></label>
+      <label>Kategorie<select name="category">${FAMILY_CATEGORIES.map(c=>`<option ${c===e.category?"selected":""}>${c}</option>`).join("")}</select></label>
+      <label>Startzeit<input name="startTime" type="time" value="${esc(e.startTime||"")}"></label>
+      <label>Endzeit<input name="endTime" type="time" value="${esc(e.endTime||"")}"></label>
+    </div>
+    <label>Person(en)
+      <div class="person-checks">
+        ${["Lara","Bianca","Ivan"].map(n=>`<label class="person-check"><input type="checkbox" name="person" value="${n}" ${(e.people||[]).includes(n)?"checked":""}> ${n}</label>`).join("")}
+        <label class="person-check"><input type="checkbox" id="otherPersonCheck" name="person" value="Sonstige" ${e.otherName?"checked":""}> Sonstige</label>
+      </div>
+    </label>
+    <label id="otherNameWrap" class="${e.otherName?"":"hidden"}">Name bei Sonstige<input name="otherName" value="${esc(e.otherName||"")}" placeholder="z. B. Oma, Mutter, Schwiegervater"></label>
+    <label>Ort<input name="location" value="${esc(e.location||"")}" placeholder="optional"></label>
+    <label>Erinnerung<select name="reminder">${FAMILY_REMINDERS.map(([v,t])=>`<option value="${v}" ${v===e.reminder?"selected":""}>${t}</option>`).join("")}</select></label>
+    <label>Notiz<textarea name="note" rows="3" placeholder="optional">${esc(e.note||"")}</textarea></label>
+  `,form=>{
+    const fd=new FormData(form);
+    const people=fd.getAll("person").filter(x=>x!=="Sonstige");
+    const otherSelected=fd.getAll("person").includes("Sonstige");
+    const obj={
+      id:e.id||uid(),title:fd.get("title").trim(),date:fd.get("date"),
+      startTime:fd.get("startTime")||"",endTime:fd.get("endTime")||"",
+      category:fd.get("category"),people,otherName:otherSelected?(fd.get("otherName")||"").trim():"",
+      location:(fd.get("location")||"").trim(),note:(fd.get("note")||"").trim(),reminder:fd.get("reminder")
+    };
+    if(e.id)data.familyEvents=data.familyEvents.map(x=>x.id===e.id?obj:x);else data.familyEvents.push(obj);
+    saveData();
+  },id?()=>{if(confirm("Diesen Familientermin löschen?")){data.familyEvents=data.familyEvents.filter(x=>x.id!==id);saveData();closeEditor();}}:null);
+  setTimeout(()=>{
+    const chk=document.querySelector("#otherPersonCheck"),wrap=document.querySelector("#otherNameWrap");
+    chk?.addEventListener("change",()=>wrap?.classList.toggle("hidden",!chk.checked));
+  },0);
+}
+document.querySelector("#newFamilyEvent")?.addEventListener("click",()=>openFamilyEvent());
+document.querySelectorAll(".family-filter").forEach(b=>b.addEventListener("click",()=>{
+  familyPersonFilter=b.dataset.person;
+  document.querySelectorAll(".family-filter").forEach(x=>x.classList.toggle("active",x===b));
+  renderFamily();
+}));
+setInterval(()=>{if(document.visibilityState==="visible")checkFamilyReminders()},60000);
+
+
+function renderAll(){ensureFamilyData();renderDashboard();renderTasks();renderBooks();renderSubjects();renderCalendar();renderFamily();renderFamilyDashboard();checkFamilyReminders();}
 renderAll();
 initCloud();
 

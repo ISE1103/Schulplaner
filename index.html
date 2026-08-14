@@ -68,6 +68,8 @@
 
       <h3>Nächste Aufgaben</h3>
       <div id="nextTasks" class="card-list"></div>
+      <h3>👨‍👩‍👧 Nächste Familientermine</h3>
+      <div id="nextFamilyEvents" class="card-list"></div>
       <h3>💾 Datensicherung</h3>
       <div class="backup-panel">
         <div><strong>Deine Daten sichern</strong><p>Exportiere Aufgaben, Stundenplan, Bücher und Fächer als Datei oder stelle eine Sicherung wieder her.</p></div>
@@ -117,6 +119,35 @@
     </section>
   </main>
 
+  
+    <section id="family" class="view">
+      <div class="page-title">
+        <div><h2>👨‍👩‍👧 Familienkalender</h2><p>Gemeinsame Termine für Lara, Bianca, Ivan und Sonstige.</p></div>
+        <button id="newFamilyEvent" class="primary" type="button">＋ Neuer Termin</button>
+      </div>
+
+      <div class="family-filters">
+        <button class="family-filter active" data-person="all">Alle</button>
+        <button class="family-filter" data-person="Lara">Lara</button>
+        <button class="family-filter" data-person="Bianca">Bianca</button>
+        <button class="family-filter" data-person="Ivan">Ivan</button>
+        <button class="family-filter" data-person="Sonstige">Sonstige</button>
+      </div>
+
+      <div id="familyReminderBox" class="reminder-box hidden"></div>
+
+      <div class="family-layout">
+        <div>
+          <h3>Kommende Termine</h3>
+          <div id="familyUpcoming" class="family-event-list"></div>
+        </div>
+        <div>
+          <h3>Vergangene Termine</h3>
+          <div id="familyPast" class="family-event-list"></div>
+        </div>
+      </div>
+    </section>
+
   <dialog id="editor">
     <form method="dialog" id="editorForm">
       <div class="modal-head">
@@ -139,6 +170,7 @@
     <button class="bottom-tab" data-view="tasks"><span>📝</span><small>Aufgaben</small></button>
     <button class="bottom-tab" data-view="books"><span>📚</span><small>Bücher</small></button>
     <button class="bottom-tab" data-view="subjects"><span>👨‍🏫</span><small>Fächer</small></button>
+    <button class="bottom-tab" data-view="family"><span>👨‍👩‍👧</span><small>Familie</small></button>
   </nav>
   <div id="toast" class="toast" role="status"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
