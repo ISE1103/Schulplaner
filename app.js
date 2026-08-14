@@ -247,6 +247,29 @@ async function importBackup(file){
 document.querySelector("#exportBackup").addEventListener("click",exportBackup);
 document.querySelector("#importBackup").addEventListener("change",e=>importBackup(e.target.files[0]));
 
+
+// iOS/PWA: Dialog zuverlässig schließen
+const editorDialog=document.querySelector("#editor");
+function closeEditor(){
+  if(editorDialog && editorDialog.open) editorDialog.close();
+}
+document.querySelector("#closeEditorBtn")?.addEventListener("click",closeEditor);
+document.querySelector("#cancelEditorBtn")?.addEventListener("click",closeEditor);
+
+// Tippen auf den dunklen Bereich außerhalb des Dialoginhalts schließt ebenfalls.
+editorDialog?.addEventListener("click",e=>{
+  if(e.target!==editorDialog)return;
+  const r=editorDialog.getBoundingClientRect();
+  const inside=e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;
+  if(!inside) closeEditor();
+});
+
+// Escape/Abbruch-Ereignis sauber behandeln, ohne Formulardaten zu speichern.
+editorDialog?.addEventListener("cancel",e=>{
+  e.preventDefault();
+  closeEditor();
+});
+
 function renderAll(){renderDashboard();renderTasks();renderBooks();renderSubjects();renderCalendar();}
 renderAll();
 

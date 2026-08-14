@@ -96,13 +96,13 @@
     <form method="dialog" id="editorForm">
       <div class="modal-head">
         <h2 id="editorTitle">Eintrag</h2>
-        <button class="icon-button" value="cancel" aria-label="Schließen">✕</button>
+        <button class="icon-button" id="closeEditorBtn" type="button" aria-label="Schließen">✕</button>
       </div>
       <div id="editorFields" class="form-grid"></div>
       <div class="modal-actions">
         <button type="button" id="deleteBtn" class="danger ghost hidden">🗑 Löschen</button>
         <span class="spacer"></span>
-        <button value="cancel" class="ghost">Abbrechen</button>
+        <button type="button" id="cancelEditorBtn" class="ghost">Abbrechen</button>
         <button type="submit" class="primary">💾 Speichern</button>
       </div>
     </form>
