@@ -97,3 +97,15 @@ Es gibt noch keine Cloud-Synchronisation zwischen mehreren Geräten.
 - Filter nach Person
 - kommende Familientermine auf der Übersicht
 - Familienkalender wird über die bestehende Supabase-Cloud synchronisiert
+
+## Version 2.9.2
+- Überschriften und Terminlisten im Familienkalender etwas vom Rand eingerückt
+- automatische Kategorie-Symbole:
+  - Familie 👨‍👩‍👧
+  - Schule 🎓
+  - Arzt 🩺
+  - Privat 👤
+  - Arbeit 💼
+  - Freizeit 🎯
+  - Veranstaltung 🎉
+  - Sonstiges 📌

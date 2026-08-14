@@ -451,6 +451,19 @@ function eventStart(e){
   const t=e.startTime||"00:00";
   return new Date(`${e.date}T${t}:00`);
 }
+function familyCategoryIcon(category){
+  const icons={
+    "Familie":"👨‍👩‍👧",
+    "Schule":"🎓",
+    "Arzt":"🩺",
+    "Privat":"👤",
+    "Arbeit":"💼",
+    "Freizeit":"🎯",
+    "Veranstaltung":"🎉",
+    "Sonstiges":"📌"
+  };
+  return icons[category]||"📌";
+}
 function familyPeopleText(e){
   const a=[...(e.people||[])];
   if(e.otherName)a.push(e.otherName);
@@ -460,7 +473,7 @@ function familyEventCard(e,past=false){
   const start=eventStart(e), date=start.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"});
   const time=e.startTime?`${e.startTime}${e.endTime?"–"+e.endTime:""} Uhr`:"ganztägig";
   return `<article class="family-event ${past?"past":""}" data-family-id="${e.id}">
-    <div class="family-event-top"><div class="family-event-title">${esc(e.title)}</div><div class="family-event-date">${date} · ${time}</div></div>
+    <div class="family-event-top"><div class="family-event-title-row"><span class="family-category-icon">${familyCategoryIcon(e.category)}</span><div class="family-event-title">${esc(e.title)}</div></div><div class="family-event-date">${date} · ${time}</div></div>
     <div class="family-event-meta">
       <span class="family-chip">👤 ${esc(familyPeopleText(e))}</span>
       <span class="family-chip">${esc(e.category||"Sonstiges")}</span>
@@ -548,13 +561,26 @@ function openFamilyEvent(id=null){
     chk?.addEventListener("change",()=>wrap?.classList.toggle("hidden",!chk.checked));
   },0);
 }
-document.querySelector("#newFamilyEvent")?.addEventListener("click",()=>openFamilyEvent());
+document.addEventListener("click",e=>{
+  const btn=e.target.closest("#newFamilyEvent");
+  if(btn){e.preventDefault();openFamilyEvent();}
+});
 document.querySelectorAll(".family-filter").forEach(b=>b.addEventListener("click",()=>{
   familyPersonFilter=b.dataset.person;
   document.querySelectorAll(".family-filter").forEach(x=>x.classList.toggle("active",x===b));
   renderFamily();
 }));
 setInterval(()=>{if(document.visibilityState==="visible")checkFamilyReminders()},60000);
+
+function bindFamilyButtons(){
+  const btn=document.querySelector("#newFamilyEvent");
+  if(btn && !btn.dataset.bound){
+    btn.dataset.bound="1";
+    btn.addEventListener("click",e=>{e.preventDefault();openFamilyEvent();});
+  }
+}
+document.addEventListener("DOMContentLoaded",bindFamilyButtons);
+
 
 
 function renderAll(){ensureFamilyData();renderDashboard();renderTasks();renderBooks();renderSubjects();renderCalendar();renderFamily();renderFamilyDashboard();checkFamilyReminders();}

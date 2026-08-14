@@ -306,3 +306,73 @@ body{position:relative}
  .family-event-date{white-space:normal}
  .person-checks{grid-template-columns:1fr 1fr}
 }
+
+/* v2.9.1 Familienbutton Fix */
+@media(max-width:700px) and (orientation:portrait){
+  #family .page-title{
+    display:flex;
+    flex-direction:row;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  #family .page-title>div{
+    flex:1 1 auto;
+    min-width:0;
+  }
+  #family .page-title h2{
+    font-size:21px;
+    line-height:1.15;
+  }
+  #family .page-title p{
+    font-size:12px;
+    line-height:1.3;
+  }
+  #newFamilyEvent{
+    flex:0 0 auto;
+    width:auto !important;
+    max-width:132px;
+    min-height:38px;
+    padding:8px 10px;
+    font-size:12px;
+    white-space:nowrap;
+    border-radius:11px;
+  }
+}
+
+/* v2.9.2 Familienkalender Feinschliff */
+#family .family-layout > div{
+  padding-left:8px;
+  padding-right:4px;
+}
+#family .family-layout > div > h3{
+  margin-left:4px;
+  margin-bottom:12px;
+}
+@media(max-width:700px){
+  #family .family-layout > div{
+    padding-left:10px;
+    padding-right:10px;
+  }
+  #family .family-layout > div > h3{
+    margin-left:2px;
+  }
+}
+.family-category-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:28px;
+  height:28px;
+  border-radius:9px;
+  background:#F1F2FF;
+  font-size:17px;
+  margin-right:7px;
+  vertical-align:middle;
+}
+.family-event-title-row{
+  display:flex;
+  align-items:center;
+  gap:2px;
+  min-width:0;
+}
