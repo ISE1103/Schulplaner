@@ -412,6 +412,13 @@ document.querySelector("#loginForm")?.addEventListener("submit",async e=>{
 
 document.querySelector("#logoutBtn")?.addEventListener("click",async()=>{
   if(cloudClient)await cloudClient.auth.signOut();
+  const pw=document.querySelector("#loginPassword");
+  if(pw)pw.value="";
+  showLoggedOut();
+  window.scrollTo(0,0);
+  // Browser erlauben window.close() normalerweise nur für Fenster, die per Script geöffnet wurden.
+  // Falls die installierte PWA/Plattform es erlaubt, wird sie geschlossen; andernfalls bleibt sicher der Login-Bildschirm stehen.
+  try{window.close();}catch(e){}
 });
 
 

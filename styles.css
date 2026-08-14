@@ -239,3 +239,15 @@ body{position:relative}
     max-width:100vw;
   }
 }
+
+/* v2.7 Querformat Icons */
+@media (orientation:landscape) and (max-height:520px){
+  /* Navigation und große Symbolflächen kompakter halten */
+  .bottom-tab span{font-size:15px !important;line-height:1}
+  .bottom-tab small{font-size:9px !important}
+  .bottom-tab{min-height:40px !important;padding:3px 4px}
+  .auth-logo{width:46px;height:46px;font-size:23px}
+  .stat-icon,.card-icon,.icon,.empty-icon{font-size:20px !important}
+  .icon-button{width:34px;height:34px;font-size:16px}
+  button .icon,button span[aria-hidden="true"]{font-size:1em !important}
+}

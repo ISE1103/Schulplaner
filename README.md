@@ -75,3 +75,9 @@ Es gibt noch keine Cloud-Synchronisation zwischen mehreren Geräten.
 - Login-Feld verliert Fokus vor dem Wechsel zur App
 - App und Auth-Bildschirm strikt auf Viewport-Breite begrenzt
 - zusätzliche Breitenkorrekturen für Hoch- und Querformat
+
+## Version 2.7
+- Symbole im iPhone-Querformat verkleinert
+- untere Navigation im Querformat kompakter
+- Abmelden leert das Passwortfeld und zeigt sofort den gesperrten Login-Bildschirm
+- automatisches Schließen wird versucht, soweit iOS/Browser dies zulassen
