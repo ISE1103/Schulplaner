@@ -617,6 +617,23 @@ document.addEventListener("click",function(e){
 });
 
 
+
+function keepEditorFieldVisible(target){
+  if(!target?.closest?.("#editor"))return;
+  setTimeout(()=>{
+    target.scrollIntoView({behavior:"smooth",block:"center",inline:"nearest"});
+  },280);
+}
+document.querySelector("#editor")?.addEventListener("focusin",e=>{
+  if(e.target.matches("input,select,textarea"))keepEditorFieldVisible(e.target);
+});
+window.visualViewport?.addEventListener("resize",()=>{
+  const active=document.activeElement;
+  if(active?.matches?.("#editor input,#editor select,#editor textarea")){
+    keepEditorFieldVisible(active);
+  }
+});
+
 function renderAll(){ensureFamilyData();renderDashboard();renderTasks();renderBooks();renderSubjects();renderCalendar();renderFamily();renderFamilyDashboard();checkFamilyReminders();}
 renderAll();
 initCloud();

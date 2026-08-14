@@ -120,3 +120,9 @@ Es gibt noch keine Cloud-Synchronisation zwischen mehreren Geräten.
 - 1 Erinnerung = Badge 1, 2 Erinnerungen = Badge 2 usw.
 - Badge wird beim Öffnen/Rückkehren zur App und während der Nutzung aktualisiert
 - keine Push-Benachrichtigungen
+
+## Version 2.9.5 – iPhone Tastatur
+- Formularfelder im Termin-Dialog bleiben beim Öffnen der Bildschirmtastatur sichtbar
+- aktives Feld wird automatisch in den sichtbaren Bereich gescrollt
+- besonders das Notizfeld wird oberhalb der Tastatur positioniert
+- Dialog bleibt auf kleinen Displays scrollbar

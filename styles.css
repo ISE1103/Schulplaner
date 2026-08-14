@@ -385,3 +385,33 @@ body{position:relative}
   cursor:pointer;
 }
 #newFamilyEvent:active{transform:translateY(1px)}
+
+/* v2.9.5 iPhone Tastatur */
+@media(max-width:700px){
+  dialog{
+    width:calc(100vw - 20px);
+    max-width:calc(100vw - 20px);
+    max-height:calc(100dvh - 12px);
+    margin:auto;
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  dialog form{
+    max-height:calc(100dvh - 28px);
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    scroll-padding-top:70px;
+    scroll-padding-bottom:45vh;
+    padding-bottom:max(20px,env(safe-area-inset-bottom));
+  }
+  dialog textarea{
+    min-height:110px;
+    resize:vertical;
+  }
+  dialog input:focus,
+  dialog select:focus,
+  dialog textarea:focus{
+    scroll-margin-top:80px;
+    scroll-margin-bottom:45vh;
+  }
+}
