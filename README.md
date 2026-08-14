@@ -81,3 +81,8 @@ Es gibt noch keine Cloud-Synchronisation zwischen mehreren Geräten.
 - untere Navigation im Querformat kompakter
 - Abmelden leert das Passwortfeld und zeigt sofort den gesperrten Login-Bildschirm
 - automatisches Schließen wird versucht, soweit iOS/Browser dies zulassen
+
+## Version 2.8
+- Im Smartphone-Hochformat werden Montag bis Freitag gleichzeitig angezeigt
+- Kein seitliches Wischen mehr nötig, um Freitag zu erreichen
+- Wochentagsbuttons passen sich auch an schmale iPhones an

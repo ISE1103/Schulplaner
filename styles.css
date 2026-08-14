@@ -251,3 +251,28 @@ body{position:relative}
   .icon-button{width:34px;height:34px;font-size:16px}
   button .icon,button span[aria-hidden="true"]{font-size:1em !important}
 }
+
+/* v2.8 alle Wochentage im Hochformat */
+@media (max-width:700px) and (orientation:portrait){
+  .weekday-switch{
+    display:grid !important;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:5px;
+    width:100%;
+    overflow:visible !important;
+    padding-left:0;
+    padding-right:0;
+  }
+  .weekday-switch button{
+    min-width:0 !important;
+    width:100%;
+    min-height:42px;
+    padding:7px 3px;
+    font-size:12px;
+    white-space:nowrap;
+  }
+}
+@media (max-width:390px) and (orientation:portrait){
+  .weekday-switch{gap:3px}
+  .weekday-switch button{font-size:11px;padding-left:1px;padding-right:1px}
+}
