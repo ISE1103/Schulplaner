@@ -406,6 +406,24 @@ document.querySelector("#logoutBtn")?.addEventListener("click",async()=>{
   if(cloudClient)await cloudClient.auth.signOut();
 });
 
+
+let viewportTimer=null;
+function handleViewportChange(){
+  clearTimeout(viewportTimer);
+  viewportTimer=setTimeout(()=>{
+    renderCalendar();
+    // iOS can keep a dialog sized to the previous orientation until layout is touched.
+    const dlg=document.querySelector("#editor");
+    if(dlg?.open){
+      dlg.style.maxHeight="none";
+      requestAnimationFrame(()=>{dlg.style.maxHeight="calc(100dvh - 24px)";});
+    }
+  },120);
+}
+window.addEventListener("orientationchange",handleViewportChange);
+window.addEventListener("resize",handleViewportChange);
+window.visualViewport?.addEventListener("resize",handleViewportChange);
+
 function renderAll(){renderDashboard();renderTasks();renderBooks();renderSubjects();renderCalendar();}
 renderAll();
 initCloud();

@@ -118,3 +118,68 @@ dialog form{padding:0 20px 20px}.modal-head{position:sticky;top:0;background:whi
 .auth-card{max-width:420px}
 .auth-card .auth-form{margin-top:22px}
 .account-bar{padding:4px;background:transparent}
+
+/* v2.5 iPhone Rotation */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{min-width:0;overflow-x:hidden}
+main,.container,.view,.card,.page-title{min-width:0;max-width:100%}
+img,svg,canvas{max-width:100%;height:auto}
+
+/* Dialoge passen sich an verfügbare iPhone-Höhe an. */
+dialog{
+  max-width:min(680px,calc(100vw - 24px));
+  max-height:calc(100dvh - 24px);
+  overflow:auto;
+  overscroll-behavior:contain;
+}
+dialog::backdrop{background:rgba(20,24,40,.46)}
+dialog form{max-width:100%}
+dialog input,dialog select,dialog textarea{max-width:100%;min-width:0}
+
+/* Portrait: kompakte Tagesansicht. */
+@media (max-width:700px) and (orientation:portrait){
+  .app-shell,.container,main{width:100%;max-width:100%}
+  .calendar-grid{display:block;width:100%}
+  .day-column{display:none;width:100%;min-width:0}
+  .day-column.active{display:block}
+  .weekday-switch{display:flex;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .weekday-switch::-webkit-scrollbar{display:none}
+}
+
+/* iPhone Querformat: Breite sinnvoll ausnutzen, ohne winzige Desktop-Spalten. */
+@media (max-height:520px) and (orientation:landscape){
+  body{padding-bottom:calc(66px + env(safe-area-inset-bottom))}
+  .topbar,.header{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+  main,.container{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+  .page-title{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+  .page-title h1,.page-title h2{font-size:22px}
+  .page-title p{margin-top:3px}
+  .weekday-switch{display:flex;overflow-x:auto;gap:7px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .weekday-switch::-webkit-scrollbar{display:none}
+  .weekday-switch button{min-width:76px;min-height:38px;padding:7px 10px}
+  .calendar-grid{display:block;width:100%;overflow:visible}
+  .day-column{display:none!important;width:100%;min-width:0}
+  .day-column.active{display:block!important}
+  .day-column>h3{font-size:19px;padding:3px 2px 7px}
+  .lesson-slot{min-height:68px;margin-bottom:7px;padding:8px 10px}
+  .lesson{min-height:52px;padding:9px 11px}
+  .lesson .lesson-title{font-size:15px}
+  .lesson .lesson-meta,.lesson .lesson-note{font-size:12px}
+  .bottom-nav{padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom))}
+  .bottom-tab{min-height:45px}
+  .bottom-tab span{font-size:17px}.bottom-tab small{font-size:9px}
+  dialog{
+    width:min(760px,calc(100vw - 32px));
+    max-width:calc(100vw - 32px);
+    max-height:calc(100dvh - 18px);
+    margin:auto;
+  }
+  dialog form{padding-bottom:max(8px,env(safe-area-inset-bottom))}
+  .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* Größere Tablets im Querformat dürfen wieder mehrere Spalten zeigen. */
+@media (min-width:768px) and (min-height:600px) and (orientation:landscape){
+  .calendar-grid{display:grid}
+  .day-column{display:block!important}
+}

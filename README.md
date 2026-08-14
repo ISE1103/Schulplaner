@@ -60,3 +60,11 @@ Es gibt noch keine Cloud-Synchronisation zwischen mehreren Geräten.
 - kein Passwort wird im Quellcode gespeichert
 - automatische Cloud-Synchronisation bleibt erhalten
 - siehe `PASSWORT_LOGIN_SETUP.md`
+
+## Version 2.5 – iPhone Hoch-/Querformat
+- Layout reagiert auf Geräte-Drehung und Visual Viewport
+- Stundenplan wird nach Rotation neu gerendert
+- iPhone-Querformat nutzt eine kompakte Tagesansicht
+- Dialoge passen sich an die aktuelle Bildschirmhöhe an
+- Safe-Area-Unterstützung für iPhone
+- Tablet-Querformat behält Mehrspaltenansicht
