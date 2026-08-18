@@ -126,3 +126,6 @@ Es gibt noch keine Cloud-Synchronisation zwischen mehreren Geräten.
 - aktives Feld wird automatisch in den sichtbaren Bereich gescrollt
 - besonders das Notizfeld wird oberhalb der Tastatur positioniert
 - Dialog bleibt auf kleinen Displays scrollbar
+
+## Version 2.10 – Laras privater Zyklusbereich
+- PIN-Schutz, Periodeneinträge, Verlauf und vorsichtige Zyklusschätzung.

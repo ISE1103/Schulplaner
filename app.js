@@ -3,6 +3,8 @@ const DAYS=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag"];
 const KEY="schulplaner.pwa.data.v1";
 let data=loadData(), selectedDay=1, editorState=null;
 function ensureFamilyData(){if(!Array.isArray(data.familyEvents))data.familyEvents=[];}
+function ensureCycleData(){if(!Array.isArray(data.cycleEntries))data.cycleEntries=[];}
+ensureCycleData();
 ensureFamilyData();
 
 function loadData(){
@@ -44,7 +46,7 @@ async function loadCloudState(){
   if(error){console.error(error);setSyncStatus("⚠️ Cloud-Fehler","error");return;}
   if(row?.data){
     applyingRemote=true;
-    data={subjects:row.data.subjects||[],books:row.data.books||[],tasks:row.data.tasks||[],lessons:row.data.lessons||[],familyEvents:row.data.familyEvents||[]};
+    data={subjects:row.data.subjects||[],books:row.data.books||[],tasks:row.data.tasks||[],lessons:row.data.lessons||[],familyEvents:row.data.familyEvents||[],cycleEntries:row.data.cycleEntries||[]};
     localStorage.setItem(KEY,JSON.stringify(data));renderAll();
     applyingRemote=false;
   }else{
@@ -60,7 +62,7 @@ function startRealtime(){
       const remote=payload.new?.data;
       if(!remote)return;
       applyingRemote=true;
-      data={subjects:remote.subjects||[],books:remote.books||[],tasks:remote.tasks||[],lessons:remote.lessons||[],familyEvents:remote.familyEvents||[]};
+      data={subjects:remote.subjects||[],books:remote.books||[],tasks:remote.tasks||[],lessons:remote.lessons||[],familyEvents:remote.familyEvents||[],cycleEntries:remote.cycleEntries||[]};
       localStorage.setItem(KEY,JSON.stringify(data));renderAll();
       applyingRemote=false;
       setSyncStatus("☁️ Aktualisiert","ok");
@@ -340,7 +342,7 @@ async function importBackup(file){
     const parsed=JSON.parse(await file.text()),incoming=parsed.data||parsed;
     if(!incoming||!["subjects","books","tasks","lessons"].every(k=>Array.isArray(incoming[k])))throw new Error("format");
     if(!confirm("Das Backup ersetzt die aktuell auf diesem Gerät gespeicherten Schulplaner-Daten. Fortfahren?"))return;
-    data={subjects:incoming.subjects,books:incoming.books,tasks:incoming.tasks,lessons:incoming.lessons,familyEvents:incoming.familyEvents||[]};
+    data={subjects:incoming.subjects,books:incoming.books,tasks:incoming.tasks,lessons:incoming.lessons,familyEvents:incoming.familyEvents||[],cycleEntries:incoming.cycleEntries||[]};
     saveData();toast("Backup wiederhergestellt");
   }catch(e){alert("Die Datei konnte nicht als Schulplaner-Backup gelesen werden.");}
   finally{document.querySelector("#importBackup").value="";}
@@ -634,7 +636,19 @@ window.visualViewport?.addEventListener("resize",()=>{
   }
 });
 
-function renderAll(){ensureFamilyData();renderDashboard();renderTasks();renderBooks();renderSubjects();renderCalendar();renderFamily();renderFamilyDashboard();checkFamilyReminders();}
+
+let cycleUnlocked=false;
+function cyclePinHash(pin){let h=2166136261;for(const ch of pin){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return(h>>>0).toString(16)}
+function lockCycle(){cycleUnlocked=false;document.querySelector("#cycleLocked")?.classList.remove("hidden");document.querySelector("#cycleContent")?.classList.add("hidden");}
+function setupCyclePin(){const a=prompt("Neue PIN (4–6 Ziffern):");if(a===null)return;if(!/^\d{4,6}$/.test(a)){alert("Bitte 4 bis 6 Ziffern verwenden.");return}const b=prompt("PIN wiederholen:");if(a!==b){alert("PINs stimmen nicht überein.");return}localStorage.setItem("lara_cycle_pin_hash",cyclePinHash(a));alert("PIN gespeichert.");}
+function unlockCycle(pin){const s=localStorage.getItem("lara_cycle_pin_hash");const m=document.querySelector("#cyclePinMessage");if(!s){if(m)m.textContent="Bitte zuerst eine PIN festlegen.";return}if(cyclePinHash(pin)!==s){if(m)m.textContent="PIN ist nicht korrekt.";return}cycleUnlocked=true;if(m)m.textContent="";document.querySelector("#cycleLocked")?.classList.add("hidden");document.querySelector("#cycleContent")?.classList.remove("hidden");renderCycle();}
+function cd(d){return new Date(d+"T12:00:00")} function cf(d){return d?cd(d).toLocaleDateString("de-DE"):"–"}
+function renderCycle(){ensureCycleData();if(!cycleUnlocked)return;const a=[...data.cycleEntries].sort((x,y)=>x.startDate.localeCompare(y.startDate));const gaps=[];for(let i=1;i<a.length;i++){const n=Math.round((cd(a[i].startDate)-cd(a[i-1].startDate))/86400000);if(n>=15&&n<=60)gaps.push(n)}const avg=gaps.length?Math.round(gaps.reduce((x,y)=>x+y,0)/gaps.length):null,last=a.at(-1);let next=null;if(last&&avg){let d=cd(last.startDate);d.setDate(d.getDate()+avg);next=d.toISOString().slice(0,10)}document.querySelector("#cycleLastStart").textContent=last?cf(last.startDate):"–";document.querySelector("#cycleAverage").textContent=avg?avg+" Tage":"Noch nicht genug Daten";document.querySelector("#cycleNextEstimate").textContent=next?cf(next):"Noch nicht genug Daten";const l=document.querySelector("#cycleEntries");const r=[...a].reverse();l.innerHTML=r.length?r.map(e=>`<article class="cycle-entry" data-cycle-id="${e.id}"><div class="cycle-entry-top"><div class="cycle-entry-title">🌸 Periode</div><div class="cycle-entry-date">${cf(e.startDate)}${e.endDate?" – "+cf(e.endDate):""}</div></div><div class="cycle-entry-meta">${e.flow?`<span class="cycle-pill">Stärke: ${esc(e.flow)}</span>`:""}${e.symptoms?`<span class="cycle-pill">${esc(e.symptoms)}</span>`:""}${e.mood?`<span class="cycle-pill">${esc(e.mood)}</span>`:""}</div>${e.note?`<div class="cycle-entry-note">${esc(e.note)}</div>`:""}</article>`).join(""):'<div class="empty">Noch keine Einträge.</div>';l.querySelectorAll("[data-cycle-id]").forEach(x=>x.onclick=()=>openCycleEntry(x.dataset.cycleId));}
+function openCycleEntry(id=null){if(!cycleUnlocked)return;const e=data.cycleEntries.find(x=>x.id===id)||{id:null,startDate:localYMD(new Date()),endDate:"",flow:"",symptoms:"",mood:"",note:""};openEditor(id?"Periodeneintrag bearbeiten":"Periode eintragen",`<div class="form-grid"><label>Beginn<input name="startDate" type="date" required value="${esc(e.startDate)}"></label><label>Ende<input name="endDate" type="date" value="${esc(e.endDate)}"></label></div><label>Stärke<select name="flow"><option value="">–</option>${["Leicht","Mittel","Stark"].map(x=>`<option ${x===e.flow?"selected":""}>${x}</option>`).join("")}</select></label><label>Beschwerden<input name="symptoms" value="${esc(e.symptoms)}" placeholder="optional"></label><label>Stimmung<input name="mood" value="${esc(e.mood)}" placeholder="optional"></label><label>Private Notiz<textarea name="note" rows="4">${esc(e.note)}</textarea></label>`,form=>{const f=new FormData(form),o={id:e.id||uid(),startDate:f.get("startDate"),endDate:f.get("endDate")||"",flow:f.get("flow")||"",symptoms:(f.get("symptoms")||"").trim(),mood:(f.get("mood")||"").trim(),note:(f.get("note")||"").trim()};if(o.endDate&&o.endDate<o.startDate){alert("Enddatum darf nicht vor Beginn liegen.");return}if(e.id)data.cycleEntries=data.cycleEntries.map(x=>x.id===e.id?o:x);else data.cycleEntries.push(o);saveData();renderCycle();},id?()=>{if(confirm("Eintrag löschen?")){data.cycleEntries=data.cycleEntries.filter(x=>x.id!==id);saveData();closeEditor();renderCycle();}}:null);}
+document.querySelector("#cycleUnlockForm")?.addEventListener("submit",e=>{e.preventDefault();unlockCycle(document.querySelector("#cyclePinInput").value)});
+document.querySelector("#cycleSetupPin")?.addEventListener("click",setupCyclePin);document.querySelector("#cycleLockBtn")?.addEventListener("click",lockCycle);document.querySelector("#newCycleEntry")?.addEventListener("click",()=>openCycleEntry());
+
+function renderAll(){ensureFamilyData();ensureCycleData();renderDashboard();renderTasks();renderBooks();renderSubjects();renderCalendar();renderFamily();renderFamilyDashboard();checkFamilyReminders();renderCycle();}
 renderAll();
 initCloud();
 
