@@ -53,6 +53,7 @@
     <button class="tab" data-view="tasks">📝 <span>Aufgaben</span></button>
     <button class="tab" data-view="books">📚 <span>Bücher</span></button>
     <button class="tab" data-view="subjects">👨‍🏫 <span>Fächer</span></button>
+    <button class="tab" data-view="gallery">📷 <span>Galerie</span></button>
   </nav>
 
   <main>
@@ -148,11 +149,50 @@
       </div>
     </section>
 
+
+    <section id="gallery" class="view">
+      <div class="page-title">
+        <div><h2>📷 Dokumente & Galerie</h2><p>Private Bilder und Dokumente für Lara, Bianca und Ivan.</p></div>
+        <button id="newGalleryDocument" class="primary" type="button">＋ Dokument hochladen</button>
+      </div>
+      <div class="gallery-toolbar">
+        <div class="family-filters" id="galleryPersonFilters">
+          <button class="gallery-person-filter active" data-person="all">Alle</button>
+          <button class="gallery-person-filter" data-person="Lara">Lara</button>
+          <button class="gallery-person-filter" data-person="Bianca">Bianca</button>
+          <button class="gallery-person-filter" data-person="Ivan">Ivan</button>
+        </div>
+        <label class="gallery-category-label">Kategorie
+          <select id="galleryCategoryFilter">
+            <option value="all">Alle</option><option>Blutbild</option><option>Labor</option><option>Befund</option><option>Arztbrief</option><option>Sonstiges</option>
+          </select>
+        </label>
+      </div>
+      <div id="galleryStatus" class="gallery-status"></div>
+      <div id="galleryGrid" class="gallery-grid"></div>
+    </section>
+
   <section id="cycle" class="view">
 <div id="cycleLocked" class="cycle-lock"><div class="cycle-lock-card"><div class="cycle-lock-icon">🌸</div><h2>Laras privater Zyklusbereich</h2><p>Mit einem gemeinsamen Zyklus-Passwort geschützt.</p><form id="cycleUnlockForm"><label>Passwort<input id="cyclePinInput" type="password" autocomplete="current-password" placeholder="Zyklus-Passwort"></label><button class="primary" type="submit">Entsperren</button></form><button id="cycleSetupPin" class="secondary" type="button">Gemeinsames Passwort festlegen / ändern</button><div id="cyclePinMessage"></div></div></div>
 <div id="cycleContent" class="hidden"><div class="page-title"><div><h2>🌸 Laras Zyklus</h2><p>Private Übersicht und Aufzeichnungen.</p></div><div class="cycle-actions"><button id="newCycleEntry" class="primary" type="button">＋ Periode eintragen</button><button id="cycleLockBtn" class="secondary" type="button">🔒 Sperren</button></div></div>
 <div class="cycle-summary"><div class="cycle-stat"><small>Letzter Beginn</small><strong id="cycleLastStart">–</strong></div><div class="cycle-stat"><small>Ø Zyklus</small><strong id="cycleAverage">–</strong></div><div class="cycle-stat"><small>Nächste Schätzung</small><strong id="cycleNextEstimate">–</strong></div></div>
 <div class="cycle-info">ℹ️ Die Schätzung dient nur zur Orientierung, nicht zur Verhütung oder medizinischen Diagnose.</div><h3>Verlauf</h3><div id="cycleEntries" class="cycle-list"></div></div></section>
+<dialog id="galleryUploadDialog" class="gallery-dialog">
+  <form id="galleryUploadForm">
+    <div class="modal-head"><h2>Dokument hochladen</h2><button class="icon-button" id="closeGalleryUpload" type="button" aria-label="Schließen">✕</button></div>
+    <div class="form-grid">
+      <label>Person<select name="person" required><option>Lara</option><option>Bianca</option><option>Ivan</option></select></label>
+      <label>Kategorie<select name="category" required><option>Blutbild</option><option>Labor</option><option>Befund</option><option>Arztbrief</option><option>Sonstiges</option></select></label>
+      <label>Datum<input name="document_date" type="date" required></label>
+      <label>Titel<input name="title" type="text" maxlength="120" placeholder="z. B. Blutbild Hausarzt" required></label>
+      <label class="full">Notiz<textarea name="notes" rows="3" maxlength="1000" placeholder="Optional"></textarea></label>
+      <label class="full">Datei<input name="file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,.jpg,.jpeg,.png,.webp,.pdf" required></label>
+      <div class="gallery-privacy-note full">🔒 Dateien werden im privaten Supabase-Speicher abgelegt und nur im angemeldeten Familienkonto angezeigt.</div>
+    </div>
+    <div class="modal-actions"><button type="button" id="cancelGalleryUpload" class="ghost">Abbrechen</button><span class="spacer"></span><button id="galleryUploadSubmit" type="submit" class="primary">⬆️ Hochladen</button></div>
+  </form>
+</dialog>
+
 <dialog id="editor">
     <form method="dialog" id="editorForm">
       <div class="modal-head">
@@ -176,6 +216,7 @@
     <button class="bottom-tab" data-view="books"><span>📚</span><small>Bücher</small></button>
     <button class="bottom-tab" data-view="subjects"><span>👨‍🏫</span><small>Fächer</small></button>
     <button class="bottom-tab" data-view="family"><span>👨‍👩‍👧</span><small>Familie</small></button>
+    <button class="bottom-tab" data-view="gallery"><span>📷</span><small>Galerie</small></button>
     <button class="bottom-tab" data-view="cycle"><span>🌸</span><small>Lara</small></button>
   </nav>
   <div id="toast" class="toast" role="status"></div>

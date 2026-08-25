@@ -724,3 +724,59 @@ renderAll();
 initCloud();
 
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(console.warn));
+
+// ============================================================
+// v2.11 – Private Dokumente & Galerie (Supabase Storage)
+// ============================================================
+const GALLERY_BUCKET="member-documents";
+const GALLERY_CATEGORIES=["Blutbild","Labor","Befund","Arztbrief","Sonstiges"];
+let galleryPersonFilter="all",galleryCategoryFilter="all",galleryDocuments=[];
+const galleryUrlCache=new Map();
+function galleryStatus(text,error=false){const el=document.querySelector("#galleryStatus");if(el){el.textContent=text||"";el.style.color=error?"#B91C1C":"";}}
+function safeFileName(name){const dot=name.lastIndexOf(".");const ext=dot>=0?name.slice(dot).toLowerCase().replace(/[^.a-z0-9]/g,""):"";return `${uid()}${ext}`;}
+async function signedGalleryUrl(path){if(galleryUrlCache.has(path))return galleryUrlCache.get(path);const {data,error}=await cloudClient.storage.from(GALLERY_BUCKET).createSignedUrl(path,3600);if(error)throw error;galleryUrlCache.set(path,data.signedUrl);return data.signedUrl;}
+async function loadGallery(){
+  const grid=document.querySelector("#galleryGrid");if(!grid)return;
+  if(!cloudClient||!cloudUser){grid.innerHTML='<div class="empty">Bitte zuerst anmelden.</div>';return;}
+  galleryStatus("Galerie wird geladen …");
+  const {data:rows,error}=await cloudClient.from("member_documents").select("id,person,category,document_date,title,notes,file_name,storage_path,mime_type,created_at").eq("user_id",cloudUser.id).order("document_date",{ascending:false}).order("created_at",{ascending:false});
+  if(error){console.error(error);galleryStatus("Galerie konnte nicht geladen werden. Bitte SUPABASE_SETUP.sql ausführen.",true);grid.innerHTML='<div class="empty">Keine Galerie-Daten verfügbar.</div>';return;}
+  galleryDocuments=rows||[];galleryStatus(`${galleryDocuments.length} Dokument${galleryDocuments.length===1?"":"e"}`);await renderGallery();
+}
+async function renderGallery(){
+  const grid=document.querySelector("#galleryGrid");if(!grid)return;
+  const rows=galleryDocuments.filter(d=>(galleryPersonFilter==="all"||d.person===galleryPersonFilter)&&(galleryCategoryFilter==="all"||d.category===galleryCategoryFilter));
+  if(!rows.length){grid.innerHTML='<div class="empty">Keine Dokumente für diesen Filter.</div>';return;}
+  grid.innerHTML=rows.map(d=>`<article class="gallery-card" data-gallery-id="${esc(d.id)}"><div class="gallery-preview" data-gallery-open="${esc(d.id)}">${d.mime_type?.startsWith("image/")?'<span>🖼️ Vorschau lädt …</span>':'<span class="gallery-pdf">📄</span>'}</div><div class="gallery-card-body"><div class="gallery-card-title">${esc(d.title)}</div><div class="gallery-card-meta"><span class="gallery-pill">👤 ${esc(d.person)}</span><span class="gallery-pill">${esc(d.category)}</span><span class="gallery-pill">📅 ${esc(fmtDate(d.document_date))}</span></div>${d.notes?`<div class="gallery-card-note">${esc(d.notes)}</div>`:""}<div class="gallery-card-actions"><button type="button" class="ghost" data-gallery-open="${esc(d.id)}">Öffnen</button><button type="button" class="danger ghost" data-gallery-delete="${esc(d.id)}">Löschen</button></div></div></article>`).join("");
+  for(const d of rows.filter(x=>x.mime_type?.startsWith("image/"))){try{const url=await signedGalleryUrl(d.storage_path);const box=grid.querySelector(`[data-gallery-id="${CSS.escape(d.id)}"] .gallery-preview`);if(box)box.innerHTML=`<img src="${esc(url)}" alt="${esc(d.title)}" loading="lazy">`;}catch(e){console.error(e);}}
+}
+async function openGalleryDocument(id){const d=galleryDocuments.find(x=>x.id===id);if(!d)return;try{const url=await signedGalleryUrl(d.storage_path);window.open(url,"_blank","noopener,noreferrer");}catch(e){console.error(e);toast("Dokument konnte nicht geöffnet werden");}}
+async function deleteGalleryDocument(id){const d=galleryDocuments.find(x=>x.id===id);if(!d||!confirm(`„${d.title}“ wirklich löschen?`))return;galleryStatus("Dokument wird gelöscht …");const {error:storageError}=await cloudClient.storage.from(GALLERY_BUCKET).remove([d.storage_path]);if(storageError){console.error(storageError);galleryStatus("Datei konnte nicht gelöscht werden.",true);return;}const {error}=await cloudClient.from("member_documents").delete().eq("id",id).eq("user_id",cloudUser.id);if(error){console.error(error);galleryStatus("Metadaten konnten nicht gelöscht werden.",true);return;}galleryUrlCache.delete(d.storage_path);toast("Dokument gelöscht");await loadGallery();}
+function openGalleryUpload(){const dlg=document.querySelector("#galleryUploadDialog"),form=document.querySelector("#galleryUploadForm");if(!dlg||!form)return;if(!cloudUser){toast("Bitte zuerst anmelden");return;}form.reset();form.elements.document_date.value=localYMD(new Date());if(galleryPersonFilter!=="all")form.elements.person.value=galleryPersonFilter;dlg.showModal();}
+function closeGalleryUpload(){document.querySelector("#galleryUploadDialog")?.close();}
+document.querySelector("#newGalleryDocument")?.addEventListener("click",openGalleryUpload);
+document.querySelector("#closeGalleryUpload")?.addEventListener("click",closeGalleryUpload);
+document.querySelector("#cancelGalleryUpload")?.addEventListener("click",closeGalleryUpload);
+document.querySelector("#galleryUploadDialog")?.addEventListener("cancel",e=>{e.preventDefault();closeGalleryUpload();});
+document.querySelectorAll(".gallery-person-filter").forEach(b=>b.addEventListener("click",()=>{galleryPersonFilter=b.dataset.person;document.querySelectorAll(".gallery-person-filter").forEach(x=>x.classList.toggle("active",x===b));renderGallery();}));
+document.querySelector("#galleryCategoryFilter")?.addEventListener("change",e=>{galleryCategoryFilter=e.target.value;renderGallery();});
+document.querySelector("#galleryGrid")?.addEventListener("click",e=>{const o=e.target.closest("[data-gallery-open]");if(o)return openGalleryDocument(o.dataset.galleryOpen);const d=e.target.closest("[data-gallery-delete]");if(d)deleteGalleryDocument(d.dataset.galleryDelete);});
+document.querySelector("#galleryUploadForm")?.addEventListener("submit",async e=>{
+  e.preventDefault();if(!cloudClient||!cloudUser)return;
+  const form=e.currentTarget,fd=new FormData(form),file=fd.get("file"),btn=document.querySelector("#galleryUploadSubmit");
+  if(!(file instanceof File)||!file.size)return toast("Bitte eine Datei auswählen");
+  const allowed=["image/jpeg","image/png","image/webp","application/pdf"];if(!allowed.includes(file.type))return toast("Erlaubt sind JPG, PNG, WebP und PDF");
+  if(file.size>15*1024*1024)return toast("Datei ist größer als 15 MB");
+  const person=String(fd.get("person")||"");const category=String(fd.get("category")||"");if(!["Lara","Bianca","Ivan"].includes(person)||!GALLERY_CATEGORIES.includes(category))return;
+  btn.disabled=true;btn.textContent="⏳ Hochladen …";
+  const path=`${cloudUser.id}/${person}/${safeFileName(file.name)}`;
+  try{
+    const {error:upError}=await cloudClient.storage.from(GALLERY_BUCKET).upload(path,file,{contentType:file.type,upsert:false});if(upError)throw upError;
+    const row={user_id:cloudUser.id,person,category,document_date:String(fd.get("document_date")||""),title:String(fd.get("title")||"").trim(),notes:String(fd.get("notes")||"").trim(),file_name:file.name,storage_path:path,mime_type:file.type,file_size:file.size};
+    const {error:dbError}=await cloudClient.from("member_documents").insert(row);if(dbError){await cloudClient.storage.from(GALLERY_BUCKET).remove([path]);throw dbError;}
+    closeGalleryUpload();toast("Dokument hochgeladen");await loadGallery();
+  }catch(err){console.error(err);galleryStatus("Upload fehlgeschlagen. Supabase-Einrichtung und Berechtigungen prüfen.",true);toast("Upload fehlgeschlagen");}
+  finally{btn.disabled=false;btn.textContent="⬆️ Hochladen";}
+});
+// Galerie nach Anmeldung laden und beim Öffnen aktualisieren.
+const _setView=setView;setView=function(id){_setView(id);if(id==="gallery")loadGallery();};
